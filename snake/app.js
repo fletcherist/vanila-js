@@ -5,14 +5,31 @@ class Main {
 class Game  extends Main{
   constructor () {
     super()
+    this._directions = ['top', 'bottom', 'right', 'left']
+    this.directions = {
+      top: 'Top',
+      bottom: 'Bottom',
+      right: 'Right',
+      left: 'Left'
+    }
     this.config = {
       size: [5, 5],
       snake: {
         start: [0, 4],
         end: [0, 0]
-      }
+      },
+      direction: ''
     }
+    this.setInitialDirection()
+
     console.log(this)
+  }
+
+  setInitialDirection () {
+    this.config.direction = 
+      this.directions[
+        this._directions[Math.floor(Math.random() * 4)]
+      ]
   }
 }
 
