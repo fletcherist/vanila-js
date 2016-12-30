@@ -1,0 +1,15 @@
+{
+  "dependencies": {
+    "node-notifier": "^4.6.1"
+  },
+  "name": "snake",
+  "version": "1.0.0",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "start": "browser-sync start --server --files '*.*' --no-ui"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
