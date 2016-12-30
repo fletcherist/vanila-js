@@ -38,8 +38,23 @@ class Area extends Game {
 
   printArea () {
     for (let i = 0; i < this.area.length; i++) {
-      console.log(this.area[i])
+      // console.log(this.area[i])
     }
+  }
+
+  get () {
+    return this.area
+  }
+
+  placeSnake () {
+    let middleX = Math.floor(this.area[0].length / 2)
+    let middleY = Math.floor(this.area.length / 2)
+
+    this.area[middleY][middleX] = 1
+    this.config.snake.start[0] = middleX
+    this.config.snake.start[1] = middleY
+
+
   }
 
   renderSnake () {
@@ -56,15 +71,15 @@ class Area extends Game {
       this.area[0][2] = 1
     }
     this.printArea()
-    console.log(start, end)
+    // console.log(start, end)
   }
 }
 
 class Renderer {
   constructor () {
     this.brick = {
-      width: '50px',
-      height: '50px',
+      width: '80px',
+      height: '80px',
       color: 'grey',
       border: '1px solid black'
     }
@@ -75,43 +90,69 @@ class Renderer {
   }
 
   renderSnake () {
-    this.snake = document.createElement('div')
-    this.snake.style.width = this.brick.width
-    this.snake.style.height = this.brick.height
-    this.snake.style.backgroundColor = 'red'
+    const snake = document.createElement('div')
+    snake.style.width = this.brick.width
+    snake.style.height = this.brick.height
+    snake.style.backgroundColor = 'red'
 
-    return this.snake
+    return snake
   }
 
   renderEmpty () {
-    this.empty = document.createElement('div')
-    this.empty.style.width = this.brick.width
-    this.empty.style.height = this.brick.height
-    this.empty.style.backgroundColor = 'blue'
+    const empty = document.createElement('div')
+    empty.style.width = this.brick.width
+    empty.style.height = this.brick.height
+    empty.style.backgroundColor = 'blue'
 
-    return this.empty
+    return empty
   }
 
   renderApple () {
-    this.apple = document.createElement('div')
-    this.apple.style.width = this.brick.width
-    this.apple.style.height = this.brick.height
-    this.apple.style.backgroundColor = 'green'
+    const apple = document.createElement('div')
+    apple.style.width = this.brick.width
+    apple.style.height = this.brick.height
+    apple.style.backgroundColor = 'green'
 
-    return this.apple
+    return apple
   }
 
-  render () {
-    let child = document.createElement('div')
+  renderRow (_row) {
+    let row = document.createElement('div')
+    row.style.display = 'flex'
+
+    for (let i = 0; i < _row.length; i++) {
+      let elem
+      switch (_row[i]) {
+        case 0: elem = this.renderEmpty(); break
+        case 1: elem = this.renderSnake(); break
+        case 2: elem = this.renderApple(); break
+      }
+      row.appendChild(elem)  
+    }
+
+    return row
+  }
+
+  render (area) {
+    const container = document.createElement('div')
+    for (let i = 0; i < area.length; i++) {
+      const row = area[i]
+      container.appendChild(this.renderRow(row))
+    }
 
     // child.innerText = 'asd'
-    document.querySelector('#game').appendChild(this.snake)
+    document
+      .querySelector('#game')
+      .appendChild(container)
   }
 }
 
 const game = new Game()
 const area = new Area()
 const renderer = new Renderer()
-renderer.render()
+
+
+area.placeSnake()
+renderer.render(area.get())
 
 area.renderSnake()
