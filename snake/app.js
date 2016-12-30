@@ -62,12 +62,50 @@ class Area extends Game {
 
 class Renderer {
   constructor () {
+    this.brick = {
+      width: '50px',
+      height: '50px',
+      color: 'grey',
+      border: '1px solid black'
+    }
+
+    this.renderSnake()
+    this.renderEmpty()
+    this.renderApple()
+  }
+
+  renderSnake () {
+    this.snake = document.createElement('div')
+    this.snake.style.width = this.brick.width
+    this.snake.style.height = this.brick.height
+    this.snake.style.backgroundColor = 'red'
+
+    return this.snake
+  }
+
+  renderEmpty () {
+    this.empty = document.createElement('div')
+    this.empty.style.width = this.brick.width
+    this.empty.style.height = this.brick.height
+    this.empty.style.backgroundColor = 'blue'
+
+    return this.empty
+  }
+
+  renderApple () {
+    this.apple = document.createElement('div')
+    this.apple.style.width = this.brick.width
+    this.apple.style.height = this.brick.height
+    this.apple.style.backgroundColor = 'green'
+
+    return this.apple
   }
 
   render () {
-    const child = document.createElement('div')
-    child.innerText = 'Hello world'
-    document.querySelector('#game').appendChild(child)
+    let child = document.createElement('div')
+
+    // child.innerText = 'asd'
+    document.querySelector('#game').appendChild(this.snake)
   }
 }
 
