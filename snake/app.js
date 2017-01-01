@@ -76,11 +76,10 @@ class Area extends Game {
     this.area[randomX][randomY] = 2
   }
 
-  ifAppleHere () {
+  ifAppleHere (x, y) {
     const { snake } = this.config
-    if (this.area[snake.start[0]][snake.start[1]] == 2) {
+    if (this.area[x][y] === 2) {
       return true
-      alert('apple is here!')
     }
 
     return false
@@ -88,31 +87,47 @@ class Area extends Game {
   
   moveSnake (direction) {
     const { snake } = this.config
-
-    this.ifAppleHere()
+    let x, y
 
     switch(direction) {
       case this.directions.up:
-        this.area[snake.start[0] - 1][snake.start[1]] = 1
+        x = snake.start[0] - 1
+        y = snake.start[1]
+
+        this.ifAppleHere(x, y)
+        this.area[x][y] = 1
+
         this.config.snake.start[0]--
         console.log('up')
       break
       case this.directions.down:
-        this.area
-          [this.config.snake.start[0] + 1][this.config.snake.start[1]] = 1
-          this.config.snake.start[0]++
+        x = snake.start[0] + 1
+        y = snake.start[1]
+
+        this.ifAppleHere(x, y)
+        this.area[x][y] = 1
+        this.config.snake.start[0]++
+
         console.log('down')
       break;
       case this.directions.left:
-        this.area
-          [this.config.snake.start[0]][this.config.snake.start[1] - 1] = 1
-          this.config.snake.start[1]--
+        x = snake.start[0]
+        y = snake.start[1] - 1
+
+        this.ifAppleHere(x, y)
+        this.area[x][y] = 1
+        this.config.snake.start[1]--
+
         console.log('left')
       break
       case this.directions.right:
-        this.area
-          [this.config.snake.start[0]][this.config.snake.start[1] + 1] = 1
-          this.config.snake.start[1]++
+        x = snake.start[0]
+        y = snake.start[1] + 1
+
+        this.ifAppleHere(x, y)
+        this.area[x][y] = 1  
+        this.config.snake.start[1]++
+
         console.log('right')
       break
     }
