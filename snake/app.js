@@ -2,41 +2,46 @@ class Main {
 
 }
 
-class Game  extends Main{
+class Game extends Main{
   constructor () {
     super()
-    this._directions = ['top', 'bottom', 'right', 'left']
+    this._directions = ['up', 'down', 'right', 'left']
     this.directions = {
-      top: 'Top',
-      bottom: 'Bottom',
+      up: 'Up',
+      down: 'Down',
       right: 'Right',
       left: 'Left'
     }
     this.config = {
-      size: [5, 5],
+      size: [12, 12],
       snake: {
-        start: [0, 4],
-        end: [0, 0]
+        start: [3, 3],
+        end: [3, 3]
       },
-      direction: ''
+      direction: this.directions.up
     }
-    this.setInitialDirection()
-
-    console.log(this)
+    // this.setInitialDirection()
+    
   }
 
-  setInitialDirection () {
-    this.config.direction = 
-      this.directions[
-        this._directions[Math.floor(Math.random() * 4)]
-      ]
+  // setInitialDirection () {
+  //   this.config.direction = 
+  //     this.directions[
+  //       this._directions[Math.floor(Math.random() * 4)]
+  //     ]
+  // }
+
+  nextGameTick () {
+    
+  }
+  changeDirection () {
+    
   }
 }
 
 class Area extends Game {
   constructor () {
     super()
-    // console.log(this)
     this.area = []
     this.createArea = this.createArea.bind(this)
     this.createArea()
@@ -53,50 +58,79 @@ class Area extends Game {
     return this.area
   }
 
-  printArea () {
-    for (let i = 0; i < this.area.length; i++) {
-      // console.log(this.area[i])
-    }
-  }
-
   get () {
     return this.area
   }
 
   placeSnake () {
-    let middleX = Math.floor(this.area[0].length / 2)
-    let middleY = Math.floor(this.area.length / 2)
+    let randomX = this.config.snake.start[0]
+    let randomY= this.config.snake.start[1]
 
-    this.area[middleY][middleX] = 1
-    this.config.snake.start[0] = middleX
-    this.config.snake.start[1] = middleY
-
-
+    this.area[randomY][randomX] = 1
   }
 
-  renderSnake () {
+  placeApple () {
+    const randomX = Math.floor(Math.random() * this.config.size[0])
+    const randomY = Math.floor(Math.random() * this.config.size[1])
+
+    this.area[randomX][randomY] = 2
+  }
+
+  ifAppleHere () {
     const { snake } = this.config
-    const { start, end } = snake
-
-    this.area[0][0] = 1
-    for (let i = start[0]; i < start[1]; i++) {
-
+    if (this.area[snake.start[0]][snake.start[1]] == 2) {
+      return true
+      alert('apple is here!')
     }
-    for (let i = end[0]; i <= end[1]; i++) {
-  
-      this.area[0][1] = 1
-      this.area[0][2] = 1
-    }
-    this.printArea()
-    // console.log(start, end)
+
+    return false
   }
+  
+  moveSnake (direction) {
+    const { snake } = this.config
+
+    this.ifAppleHere()
+
+    switch(direction) {
+      case this.directions.up:
+        this.area[snake.start[0] - 1][snake.start[1]] = 1
+        this.config.snake.start[0]--
+        console.log('up')
+      break
+      case this.directions.down:
+        this.area
+          [this.config.snake.start[0] + 1][this.config.snake.start[1]] = 1
+          this.config.snake.start[0]++
+        console.log('down')
+      break;
+      case this.directions.left:
+        this.area
+          [this.config.snake.start[0]][this.config.snake.start[1] - 1] = 1
+          this.config.snake.start[1]--
+        console.log('left')
+      break
+      case this.directions.right:
+        this.area
+          [this.config.snake.start[0]][this.config.snake.start[1] + 1] = 1
+          this.config.snake.start[1]++
+        console.log('right')
+      break
+    }
+    // Erase end of the snake
+    this.area[snake.end[0]][snake.end[1]] = 0
+    this.config.snake.end[0] = this.config.snake.start[0]
+    this.config.snake.end[1] = this.config.snake.start[1]
+  }
+  
 }
 
 class Renderer {
   constructor () {
+    document.querySelector('body').style.backgroundColor = '#210'
+    
     this.brick = {
-      width: '80px',
-      height: '80px',
+      width: '50px',
+      height: '50px',
       color: 'grey',
       border: '1px solid black'
     }
@@ -110,7 +144,7 @@ class Renderer {
     const snake = document.createElement('div')
     snake.style.width = this.brick.width
     snake.style.height = this.brick.height
-    snake.style.backgroundColor = 'red'
+    snake.style.backgroundColor = '#d04000'
 
     return snake
   }
@@ -119,11 +153,12 @@ class Renderer {
     const empty = document.createElement('div')
     empty.style.width = this.brick.width
     empty.style.height = this.brick.height
-    empty.style.backgroundColor = 'blue'
+    empty.style.backgroundColor = 'rgba(255, 255, 255, 0)'
+  
 
     return empty
   }
-
+  
   renderApple () {
     const apple = document.createElement('div')
     apple.style.width = this.brick.width
@@ -152,24 +187,72 @@ class Renderer {
 
   render (area) {
     const container = document.createElement('div')
+    const DOM = document.querySelector('#game')
+    DOM.innerHTML = ''
     for (let i = 0; i < area.length; i++) {
       const row = area[i]
       container.appendChild(this.renderRow(row))
     }
 
-    // child.innerText = 'asd'
-    document
-      .querySelector('#game')
-      .appendChild(container)
+    DOM.appendChild(container)
+  }
+}
+
+class Controllers extends Main {
+  constructor () {
+    super()
+    this.keyUp = 38
+    this.keyDown = 40
+    this.keyLeft = 37
+    this.keyRight = 39
+
+    this.keyW = 87
+    this.keyS = 83
+    this.keyA = 65
+    this.keyD = 68
+  }
+
+  listen () {
+    window.addEventListener('keydown', e => {
+      switch (e.keyCode) {
+        case this.keyUp:
+        case this.keyW:
+          moveSnake('Up')
+        break;
+        case this.keyDown:
+        case this.keyS:
+          moveSnake('Down')
+        break;
+        case this.keyLeft:
+        case this.keyA:
+          moveSnake('Left')
+        break;
+        case this.keyRight:
+        case this.keyD:
+          moveSnake('Right')
+        break;
+      }
+    })
   }
 }
 
 const game = new Game()
 const area = new Area()
 const renderer = new Renderer()
+const controller = new Controllers()
 
-
+controller.listen()
 area.placeSnake()
-renderer.render(area.get())
+area.placeApple()
 
-area.renderSnake()
+renderer.render(area.get())
+setInterval(() => {
+  renderer.render(area.get())  
+}, 200)
+
+
+function moveSnake (direction) {
+  area.moveSnake(direction)
+  renderer.render(area.get())  
+}
+
