@@ -13,23 +13,19 @@ class Game extends Main{
       left: 'Left'
     }
     this.config = {
-      size: [12, 12],
+      size: [10, 10],
       snake: {
-        start: [3, 3],
-        end: [3, 3]
+        start: [1, 1],
+        end: [1, 1]
       },
+      apple: [0, 0],
+      hasAppleEaten: false,
+      moves: 0,
       direction: this.directions.up
     }
     // this.setInitialDirection()
     
   }
-
-  // setInitialDirection () {
-  //   this.config.direction = 
-  //     this.directions[
-  //       this._directions[Math.floor(Math.random() * 4)]
-  //     ]
-  // }
 
   nextGameTick () {
     
@@ -49,9 +45,9 @@ class Area extends Game {
 
   createArea () {
     const { size } = this.config
-    for (let i = 0; i <= size[0]; i++) {
+    for (let i = 0; i < size[0]; i++) {
       this.area[i] = []
-      for (let e = 0; e <= size[1]; e++) {
+      for (let e = 0; e < size[1]; e++) {
         this.area[i][e] = 0
       }
     }
@@ -73,12 +69,15 @@ class Area extends Game {
     const randomX = Math.floor(Math.random() * this.config.size[0])
     const randomY = Math.floor(Math.random() * this.config.size[1])
 
+    this.config.apple[0] = randomX
+    this.config.apple[1] = randomY
     this.area[randomX][randomY] = 2
   }
 
   ifAppleHere (x, y) {
     const { snake } = this.config
-    if (this.area[x][y] === 2) {
+    if (this.config.apple[0] === x && this.config.apple[1] === y) {
+      alert('true')
       return true
     }
 
@@ -88,64 +87,123 @@ class Area extends Game {
   moveSnake (direction) {
     const { snake } = this.config
     let x, y
+    let removeEnd = true
 
     switch(direction) {
       case this.directions.up:
         x = snake.start[0] - 1
         y = snake.start[1]
 
-        this.ifAppleHere(x, y)
-        this.area[x][y] = 1
-
-        this.config.snake.start[0]--
-        console.log('up')
+        this.config.snake.start[0]-- 
       break
       case this.directions.down:
         x = snake.start[0] + 1
         y = snake.start[1]
 
-        this.ifAppleHere(x, y)
-        this.area[x][y] = 1
-        this.config.snake.start[0]++
-
-        console.log('down')
+        this.config.snake.start[0]++ 
       break;
       case this.directions.left:
         x = snake.start[0]
         y = snake.start[1] - 1
 
-        this.ifAppleHere(x, y)
-        this.area[x][y] = 1
         this.config.snake.start[1]--
-
-        console.log('left')
       break
       case this.directions.right:
         x = snake.start[0]
         y = snake.start[1] + 1
 
-        this.ifAppleHere(x, y)
-        this.area[x][y] = 1  
         this.config.snake.start[1]++
-
-        console.log('right')
       break
     }
-    // Erase end of the snake
-    this.area[snake.end[0]][snake.end[1]] = 0
-    this.config.snake.end[0] = this.config.snake.start[0]
-    this.config.snake.end[1] = this.config.snake.start[1]
+
+    if (this.ifAppleHere(x, y)) {
+      // Do not erase the end of the snake
+      this.config.hasAppleEaten = true
+      // this.area[snake.end[0]][snake.end[1]] = 1 
+    } else {
+      if (this.config.hasAppleEaten) {
+
+        this.config.hasAppleEaten = false
+      } else {
+        this.area[snake.end[0]][snake.end[1]] = 0   
+
+        let snakeEnd = this.getSnakeEnd(snake.end[0], snake.end[1])
+        console.log(snakeEnd)
+        if (snakeEnd) {
+          this.config.snake.end[0] = snakeEnd[0]
+          this.config.snake.end[1] = snakeEnd[1]
+        }
+        // alert(this.getSnakeEnd())
+        
+       // Find the nearest point
+      // if (this.area[this.config.snake.end[0] + 1] === 1) {
+      //   this.config.snake.end[0] = this.config.snake.end[0] + 1
+      // } else if (this.area[this.config.snake.end[0] - 1] === 1) {
+      //   this.config.snake.end[0] = this.config.snake.end[0] - 1
+      // }
+
+      // if (this.area[this.config.snake.end[1] + 1] === 1) {
+      //   this.config.snake.end[1] = this.config.snake.end[1] + 1
+      // } else if (this.area[this.config.snake.end[1] - 1] === 1) {
+      //   this.config.snake.end[1] = this.config.snake.end[1] - 1
+      // }
+
+      }
+    }
+    // Move the snake
+    this.area[x][y] = 1
+
+    // console.log(this.config.snake.start)
+    // console.log(this.config.snake.end)
+    // console.log('-------')
+
+    // Increment the moves counter
+    this.config.moves++
   }
-  
+
+  getSnakeEnd (x, y) {
+    const a = this.area
+    // if (a[y]) {
+
+    // }
+    if (a[y - 1][x - 1] === 1) {
+      return [y - 1, x - 1]
+    } 
+    if (a[y - 1][x] === 1) {
+      return [y - 1, x]
+    } 
+    if (a[y - 1][x + 1] === 1) {
+      return [y - 1, x + 1]
+    } 
+    if (a[y][x - 1] === 1) {
+      return [y, x -1]
+    }
+    if (a[y][x] === 1) {
+      return [y, x]
+    }
+    if (a[y][x + 1] === 1) {
+      return [y, x + 1]
+    } 
+    if (a[y + 1][x - 1] === 1) {
+      return [y + 1, x - 1]
+    } 
+    if (a[y + 1][x] === 1) {
+      return [y + 1, x]
+    } 
+    if (a[y + 1][x + 1] === 1) {
+      return [y + 1, x + 1]
+    }
+
+    return false
+  }
 }
 
 class Renderer {
   constructor () {
-    document.querySelector('body').style.backgroundColor = '#210'
     
     this.brick = {
-      width: '50px',
-      height: '50px',
+      width: '30px',
+      height: '30px',
       color: 'grey',
       border: '1px solid black'
     }
@@ -169,6 +227,7 @@ class Renderer {
     empty.style.width = this.brick.width
     empty.style.height = this.brick.height
     empty.style.backgroundColor = 'rgba(255, 255, 255, 0)'
+    // empty.style.border = '1px solid rgba(0, 0, 0, .1)'
   
 
     return empty
