@@ -1,201 +1,90 @@
-class Main {
-
+const app = {
+  snakeHead: [],
+  snakeTail: [],
+  directions: Object.freeze({
+    left: 'left',
+    right: 'right',
+    up: 'up',
+    down: 'down'
+  }),
+  GAME_MATRIX_SIZE: 0
 }
 
-class Game extends Main{
-  constructor () {
-    super()
-    this._directions = ['up', 'down', 'right', 'left']
-    this.directions = {
-      up: 'Up',
-      down: 'Down',
-      right: 'Right',
-      left: 'Left'
-    }
-    this.config = {
-      size: [10, 10],
-      snake: {
-        start: [1, 1],
-        end: [1, 1]
-      },
-      apple: [0, 0],
-      hasAppleEaten: false,
-      moves: 0,
-      direction: this.directions.up
-    }
-    // this.setInitialDirection()
-    
+app.currentDirection = app.directions.right
+
+class Stack {
+  constructor() {
+    this.stack = []
   }
 
-  nextGameTick () {
-    
+  push(value) {
+    this.stack.push(value)
   }
-  changeDirection () {
-    
+
+  pop() {
+    const oldStack = this.stack
+    this.stack = []
+    for (let i = 1; i < oldStack.length; i++) {
+      this.stack.push(oldStack[i])
+    }
+    return oldStack[0]
   }
 }
 
-class Area extends Game {
-  constructor () {
-    super()
-    this.area = []
-    this.createArea = this.createArea.bind(this)
-    this.createArea()
+app.createGameMatrix = (size = 20) => {
+  let matrix = []
+  for (let i = 0; i < size; i++) {
+    matrix.push([])
   }
-
-  createArea () {
-    const { size } = this.config
-    for (let i = 0; i < size[0]; i++) {
-      this.area[i] = []
-      for (let e = 0; e < size[1]; e++) {
-        this.area[i][e] = 0
-      }
+  for (let i = 0; i < size; i++) {
+    for (let e = 0; e < size; e++) {
+      matrix[i][e] = 0
     }
-    return this.area
   }
 
-  get () {
-    return this.area
+  app.GAME_MATRIX_SIZE = size
+  return matrix
+}
+
+app.placeSnake = (y, x) => {
+  app.snakeHead = [y, x]
+  app.snakeTail = new Stack()
+  app.snakeTail.push([y, x])
+  app.gameMatrix[y][x] = 1
+}
+
+app.placeApple = (y, x) => {
+  app.gameMatrix[y][x] = 2
+}
+
+app.moveSnake = (direction) => {
+  let dx = 0, dy = 0
+  switch (direction) {
+    case app.directions.left: dx--; break
+    case app.directions.right: dx++; break
+    case app.directions.up: dy--; break
+    case app.directions.down: dy++; break
+    default: throw new Error('Invalid direction')
   }
 
-  placeSnake () {
-    let randomX = this.config.snake.start[0]
-    let randomY= this.config.snake.start[1]
+  app.snakeHead[0] = app.snakeHead[0] + dy
+  app.snakeHead[1] = app.snakeHead[1] + dx
 
-    this.area[randomY][randomX] = 1
+  app.snakeTail.push([app.snakeHead[0], app.snakeHead[1]])
+
+  // apple is not here
+  if (app.gameMatrix[app.snakeHead[0]][app.snakeHead[1]] !== 2) {
+    let tail = app.snakeTail.pop()
+    app.gameMatrix[tail[0]][tail[1]] = 0
+  } else {
+    // apple eaten. generate new apple
+    app.placeApple(
+      Math.floor(Math.random() * app.GAME_MATRIX_SIZE),
+      Math.floor(Math.random() * app.GAME_MATRIX_SIZE)
+    )
   }
-
-  placeApple () {
-    const randomX = Math.floor(Math.random() * this.config.size[0])
-    const randomY = Math.floor(Math.random() * this.config.size[1])
-
-    this.config.apple[0] = randomX
-    this.config.apple[1] = randomY
-    this.area[randomX][randomY] = 2
-  }
-
-  ifAppleHere (x, y) {
-    const { snake } = this.config
-    if (this.config.apple[0] === x && this.config.apple[1] === y) {
-      alert('true')
-      return true
-    }
-
-    return false
-  }
-  
-  moveSnake (direction) {
-    const { snake } = this.config
-    let x, y
-    let removeEnd = true
-
-    switch(direction) {
-      case this.directions.up:
-        x = snake.start[0] - 1
-        y = snake.start[1]
-
-        this.config.snake.start[0]-- 
-      break
-      case this.directions.down:
-        x = snake.start[0] + 1
-        y = snake.start[1]
-
-        this.config.snake.start[0]++ 
-      break;
-      case this.directions.left:
-        x = snake.start[0]
-        y = snake.start[1] - 1
-
-        this.config.snake.start[1]--
-      break
-      case this.directions.right:
-        x = snake.start[0]
-        y = snake.start[1] + 1
-
-        this.config.snake.start[1]++
-      break
-    }
-
-    if (this.ifAppleHere(x, y)) {
-      // Do not erase the end of the snake
-      this.config.hasAppleEaten = true
-      // this.area[snake.end[0]][snake.end[1]] = 1 
-    } else {
-      if (this.config.hasAppleEaten) {
-
-        this.config.hasAppleEaten = false
-      } else {
-        this.area[snake.end[0]][snake.end[1]] = 0   
-
-        let snakeEnd = this.getSnakeEnd(snake.end[0], snake.end[1])
-        console.log(snakeEnd)
-        if (snakeEnd) {
-          this.config.snake.end[0] = snakeEnd[0]
-          this.config.snake.end[1] = snakeEnd[1]
-        }
-        // alert(this.getSnakeEnd())
-        
-       // Find the nearest point
-      // if (this.area[this.config.snake.end[0] + 1] === 1) {
-      //   this.config.snake.end[0] = this.config.snake.end[0] + 1
-      // } else if (this.area[this.config.snake.end[0] - 1] === 1) {
-      //   this.config.snake.end[0] = this.config.snake.end[0] - 1
-      // }
-
-      // if (this.area[this.config.snake.end[1] + 1] === 1) {
-      //   this.config.snake.end[1] = this.config.snake.end[1] + 1
-      // } else if (this.area[this.config.snake.end[1] - 1] === 1) {
-      //   this.config.snake.end[1] = this.config.snake.end[1] - 1
-      // }
-
-      }
-    }
-    // Move the snake
-    this.area[x][y] = 1
-
-    // console.log(this.config.snake.start)
-    // console.log(this.config.snake.end)
-    // console.log('-------')
-
-    // Increment the moves counter
-    this.config.moves++
-  }
-
-  getSnakeEnd (x, y) {
-    const a = this.area
-    // if (a[y]) {
-
-    // }
-    if (a[y - 1][x - 1] === 1) {
-      return [y - 1, x - 1]
-    } 
-    if (a[y - 1][x] === 1) {
-      return [y - 1, x]
-    } 
-    if (a[y - 1][x + 1] === 1) {
-      return [y - 1, x + 1]
-    } 
-    if (a[y][x - 1] === 1) {
-      return [y, x -1]
-    }
-    if (a[y][x] === 1) {
-      return [y, x]
-    }
-    if (a[y][x + 1] === 1) {
-      return [y, x + 1]
-    } 
-    if (a[y + 1][x - 1] === 1) {
-      return [y + 1, x - 1]
-    } 
-    if (a[y + 1][x] === 1) {
-      return [y + 1, x]
-    } 
-    if (a[y + 1][x + 1] === 1) {
-      return [y + 1, x + 1]
-    }
-
-    return false
-  }
+  app.gameMatrix[app.snakeHead[0]][app.snakeHead[1]] = 1
+  app.currentDirection = direction
 }
 
 class Renderer {
@@ -272,9 +161,8 @@ class Renderer {
   }
 }
 
-class Controllers extends Main {
+class Controllers {
   constructor () {
-    super()
     this.keyUp = 38
     this.keyDown = 40
     this.keyLeft = 37
@@ -284,6 +172,7 @@ class Controllers extends Main {
     this.keyS = 83
     this.keyA = 65
     this.keyD = 68
+    this.renderer = new Renderer()
   }
 
   listen () {
@@ -291,42 +180,36 @@ class Controllers extends Main {
       switch (e.keyCode) {
         case this.keyUp:
         case this.keyW:
-          moveSnake('Up')
+          app.moveSnake(app.directions.up)
         break;
         case this.keyDown:
         case this.keyS:
-          moveSnake('Down')
+          app.moveSnake(app.directions.down)
         break;
         case this.keyLeft:
         case this.keyA:
-          moveSnake('Left')
+          app.moveSnake(app.directions.left)
         break;
         case this.keyRight:
         case this.keyD:
-          moveSnake('Right')
+          app.moveSnake(app.directions.right)
         break;
       }
+      this.renderer.render(app.gameMatrix)
     })
   }
 }
 
-const game = new Game()
-const area = new Area()
-const renderer = new Renderer()
 const controller = new Controllers()
-
+const renderer = new Renderer()
 controller.listen()
-area.placeSnake()
-area.placeApple()
 
-renderer.render(area.get())
+app.gameMatrix = app.createGameMatrix()
+app.placeSnake(0, 0)
+app.placeApple(1, 0)
+
+renderer.render(app.gameMatrix)
 setInterval(() => {
-  renderer.render(area.get())  
-}, 200)
-
-
-function moveSnake (direction) {
-  area.moveSnake(direction)
-  renderer.render(area.get())  
-}
-
+  app.moveSnake(app.currentDirection)
+  renderer.render(app.gameMatrix)
+}, 500)
