@@ -10,11 +10,13 @@ const app = {
   gameStatus: null,
   GAME_MATRIX_SIZE: 0,
   GAME_STATUSES: Object.freeze({
-    STARTED: 'STARTED'
+    NOT_STARTED: 'NOT_STARTED',
+    STARTED: 'STARTED',
     OVER: 'OVER'
-  })
+  }),
 }
 
+app.gameStatus = app.GAME_STATUSES.NOT_STARTED
 app.currentDirection = app.directions.right
 
 class Stack {
@@ -87,10 +89,17 @@ app.moveSnake = (direction) => {
   app.snakeHead[0] = app.snakeHead[0] + dy
   app.snakeHead[1] = app.snakeHead[1] + dx
 
-  app.snakeTail.push([app.snakeHead[0], app.snakeHead[1]])
+  if (app.snakeHead[0] < 0) app.snakeHead[0] = app.GAME_MATRIX_SIZE - 1
+  else if (app.snakeHead[0] >= app.GAME_MATRIX_SIZE) app.snakeHead[0] = 0
 
-  const headPositionAfterMove = app.gameMatrix[app.snakeHead[0]][app.snakeHead[1]]
+  if (app.snakeHead[1] < 0) app.snakeHead[1] = app.GAME_MATRIX_SIZE - 1
+  else if (app.snakeHead[1] >= app.GAME_MATRIX_SIZE) app.snakeHead[1] = 0
+
+  app.snakeTail.push([app.snakeHead[0], app.snakeHead[1]])
+  let headPositionAfterMove = app.gameMatrix[app.snakeHead[0]][app.snakeHead[1]]
+
   if (headPositionAfterMove === 1) {
+    app.endGame()
     alert('you died. game over')
   }
   // apple is not here
@@ -107,12 +116,17 @@ app.moveSnake = (direction) => {
 
 class Renderer {
   constructor () {
-    
     this.brick = {
       width: '30px',
       height: '30px',
       color: 'grey',
       border: '1px solid black'
+    }
+
+    this.COLORS = {
+      SNAKE: '#9C27B0',
+      EMPTY_BLOCK: '#E1BEE7',
+      APPLE: '#81C784'
     }
 
     this.renderSnake()
@@ -124,7 +138,9 @@ class Renderer {
     const snake = document.createElement('div')
     snake.style.width = this.brick.width
     snake.style.height = this.brick.height
-    snake.style.backgroundColor = '#d04000'
+    snake.style.backgroundColor = this.COLORS.SNAKE
+    snake.style.marginTop = -1
+    snake.style.marginLeft = -1
 
     return snake
   }
@@ -133,9 +149,13 @@ class Renderer {
     const empty = document.createElement('div')
     empty.style.width = this.brick.width
     empty.style.height = this.brick.height
-    empty.style.backgroundColor = 'rgba(255, 255, 255, 0)'
+    empty.style.backgroundColor = this.COLORS.EMPTY_BLOCK
     // empty.style.border = '1px solid rgba(0, 0, 0, .1)'
-  
+    empty.style.marginTop = -1
+    empty.style.marginLeft = -1
+
+    empty.style.margin = 1
+
     return empty
   }
   
@@ -143,7 +163,9 @@ class Renderer {
     const apple = document.createElement('div')
     apple.style.width = this.brick.width
     apple.style.height = this.brick.height
-    apple.style.backgroundColor = 'green'
+    apple.style.backgroundColor = this.COLORS.APPLE
+    apple.style.marginTop = -1
+    apple.style.marginLeft = -1
 
     return apple
   }
@@ -217,6 +239,7 @@ class Controllers {
           app.currentDirection = app.directions.right
         break;
       }
+      app.moveSnake(app.currentDirection)
       this.renderer.render(app.gameMatrix)
     })
   }
@@ -227,11 +250,15 @@ const renderer = new Renderer()
 controller.listen()
 
 app.gameMatrix = app.createGameMatrix()
-app.placeSnake(0, 0)
+app.placeSnake(...app.pickRandomPlace())
+app.placeRandomApple()
+app.placeRandomApple()
 app.placeRandomApple()
 
 renderer.render(app.gameMatrix)
+app.startGame()
 setInterval(() => {
+  if (app.isGameOvered()) return
   app.moveSnake(app.currentDirection)
   renderer.render(app.gameMatrix)
-}, 150)
+}, 80)
