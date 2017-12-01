@@ -117,8 +117,8 @@ app.moveSnake = (direction) => {
 class Renderer {
   constructor () {
     this.brick = {
-      width: '30px',
-      height: '30px',
+      width: '35px',
+      height: '35px',
       color: 'grey',
       border: '1px solid black'
     }
@@ -150,11 +150,8 @@ class Renderer {
     empty.style.width = this.brick.width
     empty.style.height = this.brick.height
     empty.style.backgroundColor = this.COLORS.EMPTY_BLOCK
-    // empty.style.border = '1px solid rgba(0, 0, 0, .1)'
     empty.style.marginTop = -1
     empty.style.marginLeft = -1
-
-    empty.style.margin = 1
 
     return empty
   }
