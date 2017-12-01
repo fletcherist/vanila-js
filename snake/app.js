@@ -7,7 +7,12 @@ const app = {
     up: 'up',
     down: 'down'
   }),
-  GAME_MATRIX_SIZE: 0
+  gameStatus: null,
+  GAME_MATRIX_SIZE: 0,
+  GAME_STATUSES: Object.freeze({
+    STARTED: 'STARTED'
+    OVER: 'OVER'
+  })
 }
 
 app.currentDirection = app.directions.right
@@ -46,6 +51,10 @@ app.createGameMatrix = (size = 20) => {
   return matrix
 }
 
+app.startGame = () => app.gameStatus = app.GAME_STATUSES.STARTED
+app.endGame = () => app.gameStatus = app.GAME_STATUSES.OVER
+app.isGameOvered = () => app.gameStatus === app.GAME_STATUSES.OVER
+
 app.placeSnake = (y, x) => {
   app.snakeHead = [y, x]
   app.snakeTail = new Stack()
@@ -53,9 +62,17 @@ app.placeSnake = (y, x) => {
   app.gameMatrix[y][x] = 1
 }
 
+app.getRandomMatrixSize = () => Math.floor(Math.random() * app.GAME_MATRIX_SIZE)
+app.pickRandomPlace = () => [
+  app.getRandomMatrixSize(),
+  app.getRandomMatrixSize()
+]
+
 app.placeApple = (y, x) => {
   app.gameMatrix[y][x] = 2
 }
+
+app.placeRandomApple = () => app.placeApple(...app.pickRandomPlace())
 
 app.moveSnake = (direction) => {
   let dx = 0, dy = 0
@@ -72,16 +89,17 @@ app.moveSnake = (direction) => {
 
   app.snakeTail.push([app.snakeHead[0], app.snakeHead[1]])
 
+  const headPositionAfterMove = app.gameMatrix[app.snakeHead[0]][app.snakeHead[1]]
+  if (headPositionAfterMove === 1) {
+    alert('you died. game over')
+  }
   // apple is not here
-  if (app.gameMatrix[app.snakeHead[0]][app.snakeHead[1]] !== 2) {
+  if (headPositionAfterMove !== 2) {
     let tail = app.snakeTail.pop()
     app.gameMatrix[tail[0]][tail[1]] = 0
   } else {
     // apple eaten. generate new apple
-    app.placeApple(
-      Math.floor(Math.random() * app.GAME_MATRIX_SIZE),
-      Math.floor(Math.random() * app.GAME_MATRIX_SIZE)
-    )
+    app.placeRandomApple()
   }
   app.gameMatrix[app.snakeHead[0]][app.snakeHead[1]] = 1
   app.currentDirection = direction
@@ -118,7 +136,6 @@ class Renderer {
     empty.style.backgroundColor = 'rgba(255, 255, 255, 0)'
     // empty.style.border = '1px solid rgba(0, 0, 0, .1)'
   
-
     return empty
   }
   
@@ -176,23 +193,28 @@ class Controllers {
   }
 
   listen () {
-    window.addEventListener('keydown', e => {
-      switch (e.keyCode) {
+    window.addEventListener('keydown', event => {
+      const direction = app.currentDirection
+      switch (event.keyCode) {
         case this.keyUp:
         case this.keyW:
-          app.moveSnake(app.directions.up)
+          if (direction === app.directions.down) return
+          app.currentDirection = app.directions.up
         break;
         case this.keyDown:
         case this.keyS:
-          app.moveSnake(app.directions.down)
+          if (direction === app.directions.up) return
+          app.currentDirection = app.directions.down
         break;
         case this.keyLeft:
         case this.keyA:
-          app.moveSnake(app.directions.left)
+          if (direction === app.directions.right) return
+          app.currentDirection = app.directions.left
         break;
         case this.keyRight:
         case this.keyD:
-          app.moveSnake(app.directions.right)
+          if (direction === app.directions.left) return
+          app.currentDirection = app.directions.right
         break;
       }
       this.renderer.render(app.gameMatrix)
@@ -206,10 +228,10 @@ controller.listen()
 
 app.gameMatrix = app.createGameMatrix()
 app.placeSnake(0, 0)
-app.placeApple(1, 0)
+app.placeRandomApple()
 
 renderer.render(app.gameMatrix)
 setInterval(() => {
   app.moveSnake(app.currentDirection)
   renderer.render(app.gameMatrix)
-}, 500)
+}, 150)
