@@ -314,3 +314,24 @@ function sumOfLeftLeaves(root) {
   innerWrapper(root)
   return count
 }
+
+// 01.12.2017
+// Island Perimeter
+// https://leetcode.com/problems/island-perimeter/description/
+function islandPerimeter(grid) {
+  let perimeter = 0
+  for (let i = 0, len1 = grid.length; i < len1; i++) {
+    for (let j = 0, len2 = grid[0].length; j < len2; j++) {
+      let currPerimeter = 4
+      if (grid[i + 1] && grid[i + 1][j] === 1) currPerimeter--
+      if (grid[i - 1] && grid[i - 1][j] === 1) currPerimeter--
+      if (grid[i][j + 1] === 1) currPerimeter--
+      if (grid[i][j - 1] === 1) currPerimeter--
+      perimeter += currPerimeter
+    }
+  }
+
+  return grid.length === 1
+    ? perimeter
+    : (perimeter - 1) / 2
+}
