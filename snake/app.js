@@ -1,3 +1,8 @@
+/*
+ * Yet another snake game
+ * MIT @ by Phil Romanov in 2016
+ * Made with love!
+ */
 const app = {
   snakeHead: [],
   snakeTail: [],
@@ -235,6 +240,7 @@ class Controllers {
           if (direction === app.directions.left) return
           app.currentDirection = app.directions.right
         break;
+        default: return
       }
       app.moveSnake(app.currentDirection)
       this.renderer.render(app.gameMatrix)
